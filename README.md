@@ -1,4 +1,3 @@
-# proj_Deadline_Diary
 # Deadline Diary
 
 An exam countdown and study tracker for students. Add your exams, see how many days are left, and tick off topics as you finish them.

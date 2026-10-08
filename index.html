@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Exam Countdown</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    // colours and fonts defined once here
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            paper: '#F2F5EF',
+            ink: '#14213D',
+            pen: '#2F4BDB',
+            penlight: '#DCE4FF',
+            hl: '#FFE066',
+            marker: '#E5383B',
+            grey: '#A8A29A'
+          },
+          fontFamily: {
+            head: ['"Bricolage Grotesque"', 'sans-serif'],
+            body: ['"DM Sans"', 'sans-serif'],
+            mono: ['"IBM Plex Mono"', 'monospace']
+          }
+        }
+      }
+    };
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;800&family=DM+Sans:wght@400;500;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+</head>
+
+<body class="font-body text-ink min-h-screen bg-[#f2f5ef] bg-[linear-gradient(#d9e0d3_1px,transparent_1px),linear-gradient(90deg,#d9e0d3_1px,transparent_1px)] bg-[size:24px_24px]">
+  <div class="max-w-6xl mx-auto px-4 py-6 md:py-10">
+
+    <!-- header -->
+    <header class="mb-6 md:mb-8">
+      <p id="todayText" class="text-sm font-medium text-ink/70"></p>
+      <h1 class="font-head font-extrabold text-4xl md:text-5xl leading-tight">Exam Countdown</h1>
+      <svg width="190" height="10" viewBox="0 0 190 10" class="mt-1" aria-hidden="true">
+        <path d="M2 6 Q 12 0, 22 6 T 42 6 T 62 6 T 82 6 T 102 6 T 122 6 T 142 6 T 162 6 T 188 5" fill="none" stroke="#E5383B" stroke-width="3" stroke-linecap="round"/>
+      </svg>
+      <p class="mt-2 text-base md:text-lg">Kitne din bache hain? Chal dekhte hain.</p>
+    </header>
+
+    <!-- next exam + add form -->
+    <div class="grid gap-6 lg:grid-cols-2 mb-6">
+
+      <section class="bg-hl border-2 border-ink rounded-lg shadow-[4px_4px_0_#14213d] p-5">
+        <h2 class="font-head font-extrabold text-xl">Next exam</h2>
+        <p id="nextName" class="mt-1 text-lg font-medium">Koi exam nahi? Lucky you. Ya shayad bhool gaya.</p>
+        <div id="countdownBox" class="hidden mt-4 grid grid-cols-4 gap-2 text-center font-mono">
+          <div class="bg-paper border-2 border-ink rounded-lg py-2">
+            <div id="cdDays" class="text-2xl md:text-4xl font-semibold">0</div><div class="text-xs">days</div>
+          </div>
+          <div class="bg-paper border-2 border-ink rounded-lg py-2">
+            <div id="cdHours" class="text-2xl md:text-4xl font-semibold">0</div><div class="text-xs">hours</div>
+          </div>
+          <div class="bg-paper border-2 border-ink rounded-lg py-2">
+            <div id="cdMins" class="text-2xl md:text-4xl font-semibold">0</div><div class="text-xs">mins</div>
+          </div>
+          <div class="bg-paper border-2 border-ink rounded-lg py-2">
+            <div id="cdSecs" class="text-2xl md:text-4xl font-semibold">0</div><div class="text-xs">secs</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="bg-white border-2 border-ink rounded-lg shadow-[4px_4px_0_#14213d] p-5">
+        <h2 class="font-head font-extrabold text-xl mb-3">Add an exam</h2>
+        <div class="grid gap-3 sm:grid-cols-2">
+          <div>
+            <label for="subjectInput" class="block text-sm font-medium mb-1">Subject</label>
+            <input id="subjectInput" type="text" maxlength="40" placeholder="e.g. DSA"
+              class="w-full min-h-[44px] px-3 border-2 border-ink rounded-lg bg-paper focus:outline-none focus:ring-4 focus:ring-pen/40">
+            <p id="subjectError" class="text-sm text-marker mt-1 min-h-[1.25rem]"></p>
+          </div>
+          <div>
+            <label for="dateInput" class="block text-sm font-medium mb-1">Exam date</label>
+            <input id="dateInput" type="date"
+              class="w-full min-h-[44px] px-3 border-2 border-ink rounded-lg bg-paper focus:outline-none focus:ring-4 focus:ring-pen/40">
+            <p id="dateError" class="text-sm text-marker mt-1 min-h-[1.25rem]"></p>
+          </div>
+        </div>
+        <button onclick="addExam()" class="active:translate-x-[3px] active:translate-y-[3px] active:shadow-[1px_1px_0_#14213d] shadow-[4px_4px_0_#14213d] w-full sm:w-auto min-h-[44px] mt-1 px-6 bg-pen text-white font-bold border-2 border-ink rounded-lg focus:outline-none focus:ring-4 focus:ring-pen/40">Add exam</button>
+      </section>
+    </div>
+
+    <!-- summary -->
+    <section class="grid grid-cols-3 gap-3 mb-6 text-center">
+      <div class="bg-white border-2 border-ink rounded-lg p-3">
+        <div id="sumTotal" class="font-mono font-semibold text-2xl">0</div><div class="text-xs sm:text-sm">exams</div>
+      </div>
+      <div class="bg-white border-2 border-ink rounded-lg p-3">
+        <div id="sumTasks" class="font-mono font-semibold text-2xl">0/0</div><div class="text-xs sm:text-sm">tasks done</div>
+      </div>
+      <div class="bg-white border-2 border-ink rounded-lg p-3">
+        <div id="sumNext" class="font-mono font-semibold text-2xl">-</div><div class="text-xs sm:text-sm">days to next</div>
+      </div>
+    </section>
+
+    <!-- filters -->
+    <div class="flex flex-wrap gap-2 mb-5" role="group" aria-label="Filter exams">
+      <button id="filter-all" onclick="setFilter('all')" class="filter-btn active:translate-x-[3px] active:translate-y-[3px] active:shadow-[1px_1px_0_#14213d] min-h-[44px] px-5 font-bold border-2 border-ink rounded-lg">All</button>
+      <button id="filter-upcoming" onclick="setFilter('upcoming')" class="filter-btn active:translate-x-[3px] active:translate-y-[3px] active:shadow-[1px_1px_0_#14213d] min-h-[44px] px-5 font-bold border-2 border-ink rounded-lg">Upcoming</button>
+      <button id="filter-over" onclick="setFilter('over')" class="filter-btn active:translate-x-[3px] active:translate-y-[3px] active:shadow-[1px_1px_0_#14213d] min-h-[44px] px-5 font-bold border-2 border-ink rounded-lg">Over</button>
+    </div>
+
+    <!-- exam cards get added here by script.js -->
+    <main id="examList" class="grid gap-6 md:grid-cols-2 lg:grid-cols-3"></main>
+
+    <footer class="mt-10 pt-4 border-t-2 border-ink/20 text-sm text-ink/70">
+      Made by Kshitij Nikhare for the Multidisciplinary Lab
+    </footer>
+  </div>
+
+  <script>
+// all exams live in this array
+let exams = [];
+let currentFilter = 'all';
+
+// ---------- helpers ----------
+
+// make yyyy-mm-dd from a Date (using local time, not UTC)
+function toDateString(d) {
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return d.getFullYear() + '-' + m + '-' + day;
+}
+
+// today + n days, as a string
+function dayOffset(n) {
+  const d = new Date();
+  d.setDate(d.getDate() + n);
+  return toDateString(d);
+}
+
+// stops user text from breaking our html
+function escapeHTML(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+// how many days from today till the exam (negative = over)
+function getDaysLeft(dateString) {
+  const parts = dateString.split('-');
+  const examDay = new Date(parts[0], parts[1] - 1, parts[2]);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  return Math.round((examDay - today) / 86400000);
+}
+
+function getDaysText(days) {
+  if (days < 0) return 'Over';
+  if (days === 0) return 'Today!';
+  if (days === 1) return 'Tomorrow';
+  return days + ' days left';
+}
+
+// badge colour and card border depend on how close the exam is
+function getUrgencyClass(days) {
+  if (days < 0) return 'bg-grey text-ink';
+  if (days <= 3) return 'bg-marker text-white';
+  if (days <= 7) return 'bg-hl text-ink';
+  return 'bg-penlight text-ink';
+}
+
+function formatDate(dateString) {
+  const parts = dateString.split('-');
+  const d = new Date(parts[0], parts[1] - 1, parts[2]);
+  return d.toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
+}
+
+function findExam(examId) {
+  return exams.find(function (e) { return e.id === examId; });
+}
+
+// ---------- sample data (delete this block if you don't want it) ----------
+exams = [
+  {
+    id: 1, subject: 'DSA', date: dayOffset(3),
+    tasks: [
+      { id: 11, text: 'Linked lists', done: true },
+      { id: 12, text: 'Stacks and queues', done: false },
+      { id: 13, text: 'Recursion practice', done: false }
+    ]
+  },
+  {
+    id: 2, subject: 'Computer Architecture', date: dayOffset(9),
+    tasks: [
+      { id: 21, text: 'Number systems', done: true },
+      { id: 22, text: 'Pipelining', done: false }
+    ]
+  },
+  {
+    id: 3, subject: 'Discrete Maths', date: dayOffset(20),
+    tasks: [
+      { id: 31, text: 'Graph theory', done: false },
+      { id: 32, text: 'Set theory', done: false },
+      { id: 33, text: 'Relations', done: false }
+    ]
+  }
+];
+// ---------- end sample data ----------
+
+// ---------- actions ----------
+
+function addExam() {
+  const subjectInput = document.getElementById('subjectInput');
+  const dateInput = document.getElementById('dateInput');
+  const subject = subjectInput.value.trim();
+  const date = dateInput.value;
+  let ok = true;
+
+  document.getElementById('subjectError').textContent = '';
+  document.getElementById('dateError').textContent = '';
+
+  if (subject === '') {
+    document.getElementById('subjectError').textContent = 'Subject ka naam to likh.';
+    ok = false;
+  }
+  if (date === '') {
+    document.getElementById('dateError').textContent = 'Pick the exam date.';
+    ok = false;
+  } else if (getDaysLeft(date) < 0) {
+    document.getElementById('dateError').textContent = 'That date is already gone. Pick a future date.';
+    ok = false;
+  }
+  if (!ok) return;
+
+  exams.push({ id: Date.now(), subject: subject, date: date, tasks: [] });
+
+  // reset form after adding
+  subjectInput.value = '';
+  dateInput.value = '';
+  render();
+}
+
+function addTask(examId) {
+  const input = document.getElementById('task-' + examId);
+  const text = input.value.trim();
+  if (text === '') {
+    input.placeholder = 'Write a topic first';
+    input.focus();
+    return;
+  }
+  findExam(examId).tasks.push({ id: Date.now(), text: text, done: false });
+  render();
+}
+
+function toggleTask(examId, taskId) {
+  const task = findExam(examId).tasks.find(function (t) { return t.id === taskId; });
+  task.done = !task.done;
+  render();
+}
+
+function deleteTask(examId, taskId) {
+  const exam = findExam(examId);
+  exam.tasks = exam.tasks.filter(function (t) { return t.id !== taskId; });
+  render();
+}
+
+function deleteExam(examId) {
+  const exam = findExam(examId);
+  if (exam.tasks.length > 0 && !confirm('Delete ' + exam.subject + ' and its tasks?')) return;
+  exams = exams.filter(function (e) { return e.id !== examId; });
+  render();
+}
+
+function setFilter(name) {
+  currentFilter = name;
+  render();
+}
+
+// ---------- drawing the page ----------
+
+function buildCard(exam, index) {
+  const days = getDaysLeft(exam.date);
+  const total = exam.tasks.length;
+  const done = exam.tasks.filter(function (t) { return t.done; }).length;
+  const percent = total === 0 ? 0 : Math.round((done / total) * 100);
+  const isOver = days < 0;
+
+  // slight tilt only on bigger screens, alternate left/right
+  const tilt = index % 2 === 0 ? 'md:rotate-[0.6deg]' : 'md:-rotate-[0.6deg]';
+  const border = days >= 0 && days <= 3 ? 'border-marker' : 'border-ink';
+  const fade = isOver ? 'opacity-70' : '';
+
+  let tasksHTML = '';
+  exam.tasks.forEach(function (t) {
+    tasksHTML +=
+      '<li class="flex items-center gap-2 min-h-[44px]">' +
+        '<input type="checkbox" id="chk-' + t.id + '" class="w-5 h-5 accent-pen" ' + (t.done ? 'checked' : '') +
+        ' onchange="toggleTask(' + exam.id + ',' + t.id + ')">' +
+        '<label for="chk-' + t.id + '" class="flex-1 ' + (t.done ? 'line-through text-ink/50' : '') + '">' + escapeHTML(t.text) + '</label>' +
+        '<button onclick="deleteTask(' + exam.id + ',' + t.id + ')" aria-label="Delete task" class="w-9 h-9 text-ink/60 hover:text-marker font-bold">x</button>' +
+      '</li>';
+  });
+  if (total === 0) {
+    tasksHTML = '<li class="text-sm text-ink/70 py-2">Abhi kuch plan nahi kiya. Pehla topic daal.</li>';
+  }
+
+  const progressText = total === 0 ? 'No tasks yet' : percent + '% done (' + done + '/' + total + ')';
+
+  return (
+    '<article class="bg-white border-2 ' + border + ' rounded-lg shadow-[4px_4px_0_#14213d] p-5 ' + tilt + ' ' + fade + '">' +
+      '<div class="flex items-start justify-between gap-3">' +
+        '<div>' +
+          '<h3 class="font-head font-extrabold text-xl leading-snug">' + escapeHTML(exam.subject) + '</h3>' +
+          '<p class="text-sm text-ink/70">' + formatDate(exam.date) + '</p>' +
+        '</div>' +
+        '<span class="shrink-0 px-3 py-1 border-2 border-ink rounded-lg font-bold text-sm -rotate-3 ' + getUrgencyClass(days) + '">' + getDaysText(days) + '</span>' +
+      '</div>' +
+      '<div class="mt-4">' +
+        '<div class="h-4 border-2 border-ink rounded-lg bg-paper overflow-hidden">' +
+          '<div class="h-full bg-pen transition-[width] duration-300 motion-reduce:transition-none" style="width:' + percent + '%"></div>' +
+        '</div>' +
+        '<p class="text-sm mt-1 font-mono">' + progressText + '</p>' +
+      '</div>' +
+      '<ul class="mt-3">' + tasksHTML + '</ul>' +
+      '<div class="flex gap-2 mt-3">' +
+        '<input id="task-' + exam.id + '" type="text" maxlength="50" placeholder="Add a topic" aria-label="New task for ' + escapeHTML(exam.subject) + '" ' +
+          'onkeydown="if(event.key===\'Enter\'){addTask(' + exam.id + ')}" ' +
+          'class="flex-1 min-w-0 min-h-[44px] px-3 border-2 border-ink rounded-lg bg-paper focus:outline-none focus:ring-4 focus:ring-pen/40">' +
+        '<button onclick="addTask(' + exam.id + ')" class="active:translate-x-[3px] active:translate-y-[3px] active:shadow-[1px_1px_0_#14213d] min-h-[44px] px-4 font-bold bg-hl border-2 border-ink rounded-lg shadow-[4px_4px_0_#14213d] focus:outline-none focus:ring-4 focus:ring-pen/40">Add</button>' +
+      '</div>' +
+      '<button onclick="deleteExam(' + exam.id + ')" class="mt-4 text-sm font-medium text-marker underline min-h-[44px]">Delete exam</button>' +
+    '</article>'
+  );
+}
+
+function render() {
+  // sort: upcoming by date first, over exams at the end
+  const sorted = exams.slice().sort(function (a, b) {
+    const da = getDaysLeft(a.date);
+    const db = getDaysLeft(b.date);
+    if ((da < 0) !== (db < 0)) return da < 0 ? 1 : -1;
+    return da - db;
+  });
+
+  const visible = sorted.filter(function (e) {
+    const days = getDaysLeft(e.date);
+    if (currentFilter === 'upcoming') return days >= 0;
+    if (currentFilter === 'over') return days < 0;
+    return true;
+  });
+
+  const list = document.getElementById('examList');
+  if (visible.length === 0) {
+    const msg = exams.length === 0
+      ? 'Koi exam nahi? Lucky you. Ya shayad bhool gaya. Upar se add kar.'
+      : 'Is filter mein kuch nahi mila.';
+    list.innerHTML = '<p class="md:col-span-2 lg:col-span-3 bg-white border-2 border-dashed border-ink rounded-lg p-6 text-center">' + msg + '</p>';
+  } else {
+    let html = '';
+    visible.forEach(function (e, i) { html += buildCard(e, i); });
+    list.innerHTML = html;
+  }
+
+  // filter buttons: selected one is dark
+  ['all', 'upcoming', 'over'].forEach(function (name) {
+    const btn = document.getElementById('filter-' + name);
+    btn.className = 'filter-btn press min-h-[44px] px-5 font-bold border-2 border-ink rounded-lg ' +
+      (name === currentFilter ? 'bg-ink text-paper' : 'bg-white text-ink hard');
+  });
+
+  updateSummary(sorted);
+  updateCountdown();
+}
+
+function getNextExam() {
+  const upcoming = exams.filter(function (e) { return getDaysLeft(e.date) >= 0; });
+  upcoming.sort(function (a, b) { return a.date < b.date ? -1 : 1; });
+  return upcoming[0];
+}
+
+function updateSummary() {
+  let allTasks = 0;
+  let doneTasks = 0;
+  exams.forEach(function (e) {
+    allTasks += e.tasks.length;
+    doneTasks += e.tasks.filter(function (t) { return t.done; }).length;
+  });
+  const next = getNextExam();
+
+  document.getElementById('sumTotal').textContent = exams.length;
+  document.getElementById('sumTasks').textContent = doneTasks + '/' + allTasks;
+  document.getElementById('sumNext').textContent = next ? getDaysLeft(next.date) : '-';
+}
+
+// runs every second. exam time is taken as 9:00 AM
+function updateCountdown() {
+  const next = getNextExam();
+  const box = document.getElementById('countdownBox');
+  const name = document.getElementById('nextName');
+
+  if (!next) {
+    box.classList.add('hidden');
+    name.textContent = 'Koi exam nahi? Lucky you. Ya shayad bhool gaya.';
+    return;
+  }
+
+  const parts = next.date.split('-');
+  const examTime = new Date(parts[0], parts[1] - 1, parts[2], 9, 0, 0);
+  let diff = Math.max(0, examTime - new Date());
+
+  const days = Math.floor(diff / 86400000);
+  diff = diff % 86400000;
+  const hours = Math.floor(diff / 3600000);
+  diff = diff % 3600000;
+  const mins = Math.floor(diff / 60000);
+  const secs = Math.floor((diff % 60000) / 1000);
+
+  name.textContent = next.subject + ' on ' + formatDate(next.date);
+  box.classList.remove('hidden');
+  document.getElementById('cdDays').textContent = days;
+  document.getElementById('cdHours').textContent = hours;
+  document.getElementById('cdMins').textContent = mins;
+  document.getElementById('cdSecs').textContent = secs;
+}
+
+// ---------- start ----------
+document.getElementById('todayText').textContent =
+  new Date().toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long' });
+document.getElementById('dateInput').min = toDateString(new Date());
+
+render();
+setInterval(updateCountdown, 1000);
+  </script>
+</body>
+</html>
